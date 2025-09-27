@@ -1,0 +1,87 @@
+# Docker Compose - 整合配置（傳統模式）
+# 同時管理資料庫和後端服務
+# 注意: 推薦使用分離式配置 (docker-compose.db.yml + docker-compose.backend.yml)
+
+services:
+  db:
+    image: postgres:15
+    container_name: phantom_db_integrated
+    restart: unless-stopped
+    labels:
+      - "phantom.service=database"
+      - "phantom.version=1.0"
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      # 優化設定
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - db_data_integrated:/var/lib/postgresql/data
+      - ./script/init-db.sh:/docker-entrypoint-initdb.d/01-init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - phantom_network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  backend:
+    build: .
+    container_name: phantom_backend_integrated
+    restart: unless-stopped
+    labels:
+      - "phantom.service=backend"
+      - "phantom.version=1.0"
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      DB_HOST: db
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: 5432  # 容器內部固定使用 5432
+      PORT: ${PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${PORT}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s  # 增加啟動時間，因為需要執行 migration
+    networks:
+      - phantom_network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+volumes:
+  db_data_integrated:
+    name: phantom_db_data_integrated
+
+networks:
+  phantom_network:
+    name: phantom_network
