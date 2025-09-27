@@ -1,0 +1,55 @@
+# Docker Compose - 後端專用配置
+# 只管理後端服務，可以隨時重新建置而不影響資料庫
+# 使用方式: docker-compose -f docker-compose.backend.yml up -d
+
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      # 總是使用最新的程式碼建置
+      args:
+        - BUILD_DATE=${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        - VCS_REF=${VCS_REF:-$(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')}
+    container_name: phantom_backend_dev
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      # 連接到獨立的資料庫容器
+      DB_HOST: phantom_db_persistent  # 使用資料庫容器名稱
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: 5432  # 容器內部埠號
+      PORT: ${PORT}
+    ports:
+      - "${PORT}:3000"
+    env_file:
+      - .env
+    # 健康檢查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # 資源限制
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    networks:
+      - phantom_network
+    # 開發時可以掛載程式碼目錄（可選）
+    # volumes:
+    #   - .:/usr/src/app
+    #   - /usr/src/app/node_modules
+
+# 如果需要與獨立資料庫在同一網路中通信
+networks:
+  phantom_network:
+    external: true

@@ -1,0 +1,37 @@
+# Docker Compose - 全新環境配置
+# 每次啟動都使用全新的資料庫（不持久化資料）
+# 適用情境：測試、示範、或需要乾淨環境時
+
+services:
+  db:
+    image: postgres:15
+    container_name: phantom_db_fresh
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    # 注意：這裡沒有 volumes 設定，資料不會持久化
+    # 容器停止後所有資料都會消失
+    tmpfs:
+      - /var/lib/postgresql/data # 使用記憶體暫存，提升測試速度
+
+  backend:
+    build: .
+    container_name: phantom_backend_fresh
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      DB_HOST: db
+      DB_USER: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: 5432
+      PORT: ${PORT}
+    ports:
+      - "${PORT}:3000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+# 注意：此配置檔案沒有定義 volumes，資料不會持久化

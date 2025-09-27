@@ -1,0 +1,52 @@
+# Docker Compose - 資料庫專用配置
+# 只管理資料庫服務，獨立運行，持久化資料
+# 使用方式: docker-compose -f docker-compose.db.yml up -d
+
+services:
+  db:
+    image: postgres:15
+    container_name: phantom_db_persistent
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      # 優化設定
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      # 持久化資料儲存
+      - db_data_persistent:/var/lib/postgresql/data
+      # 自動執行初始化 SQL（只在第一次建立時執行）
+      - ./extractDB/sql:/docker-entrypoint-initdb.d:ro
+      # 備份目錄
+      - ./backups:/backups
+    # 健康檢查
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    # 資源限制
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+    networks:
+      - phantom_network
+
+volumes:
+  db_data_persistent:
+    name: phantom_db_data
+    driver: local
+
+# 加入專用網路以與後端服務通信
+networks:
+  phantom_network:
+    external: true
