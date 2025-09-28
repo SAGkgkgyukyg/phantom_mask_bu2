@@ -25,5 +25,6 @@ export class LoginResponseDto {
   user: {
     id: string;
     username: string;
+    role: string;
   };
 }

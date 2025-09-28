@@ -32,8 +32,8 @@ export class InventoryResponseDto {
 }
 
 export class WeekdayResponseDto {
-  @ApiProperty({ description: '星期 UUID' })
-  weekday_id: string;
+  // @ApiProperty({ description: '星期 UUID' })
+  // weekday_id: string;
 
   @ApiProperty({ description: '星期名稱' })
   name: string;
@@ -43,8 +43,8 @@ export class WeekdayResponseDto {
 }
 
 export class PharmacyHourResponseDto {
-  @ApiProperty({ description: '營業時間 UUID' })
-  schedule_id: string;
+  // @ApiProperty({ description: '營業時間 UUID' })
+  // schedule_id: string;
 
   @ApiProperty({ description: '開店時間', format: 'time' })
   open_time: string;
@@ -73,7 +73,7 @@ export class StoreResponseDto {
   opening_hours: string | null;
 
   @ApiProperty({ description: '庫存清單', type: [InventoryResponseDto] })
-  inventories: InventoryResponseDto[];
+  inventories?: InventoryResponseDto[];
 
   @ApiProperty({ description: '詳細營業時間', type: [PharmacyHourResponseDto] })
   pharmacyHours: PharmacyHourResponseDto[];

@@ -1,14 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, Index } from 'typeorm';
 import { Inventory } from './inventory.entity';
 import { PurchaseHistory } from './purchaseHistory.entity';
 import { PharmacyHour } from './pharmacyHour.entity';
 
 @Entity('pharmacies')
+@Index('idx_pharmacies_name_lower', { synchronize: false }) // 需要手動建立：CREATE INDEX idx_pharmacies_name_lower ON pharmacies (LOWER(name))
 export class Pharmacy {
   @PrimaryGeneratedColumn('uuid')
   pharmacy_id: string;
 
   @Column({ type: 'varchar', length: 255, nullable: false })
+  @Index('idx_pharmacies_name') // 基本名稱索引
   name: string;
 
   @Column({

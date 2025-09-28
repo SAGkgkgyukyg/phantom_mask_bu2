@@ -303,20 +303,35 @@ export class NormalizedJsonSeeder {
     const dayTimeBlocks = openingHours.split(', ');
 
     for (const block of dayTimeBlocks) {
-      // 匹配 "Day HH:MM - HH:MM" 格式
+      // 匹配 "Day HH:MM - HH:MM" 格式，支援 24:00
       const match = block.match(
         /^(\w+)\s+(\d{2}):(\d{2})\s+-\s+(\d{2}):(\d{2})$/,
       );
       if (match) {
         const [, day, openHour, openMin, closeHour, closeMin] = match;
-        const openTime = `${openHour}:${openMin}:00`;
-        const closeTime = `${closeHour}:${closeMin}:00`;
 
-        // 判斷是否跨夜 (關閉時間小於開始時間 或者 開始時間晚於關閉時間)
-        const isOvernight =
-          parseInt(closeHour) < parseInt(openHour) ||
-          (parseInt(closeHour) === 0 && parseInt(openHour) > 12) ||
-          (parseInt(closeHour) <= 12 && parseInt(openHour) >= 16);
+        // 處理 24:00 的情況
+        const actualCloseHour = closeHour === '24' ? '00' : closeHour;
+        const is24Hours =
+          closeHour === '24' && openHour === '00' && openMin === '00';
+
+        const openTime = `${openHour}:${openMin}:00`;
+        // 如果是24小時營業，close_time 設為 23:59:59
+        const closeTime = is24Hours
+          ? '23:59:59'
+          : `${actualCloseHour}:${closeMin}:00`;
+
+        // 判斷是否跨夜
+        let isOvernight = false;
+        if (!is24Hours) {
+          // 如果原始時間是24:00，表示跨夜到隔天00:00
+          if (closeHour === '24') {
+            isOvernight = true;
+          } else {
+            // 其他情況：關閉時間小於開始時間
+            isOvernight = parseInt(actualCloseHour) < parseInt(openHour);
+          }
+        }
 
         hours.push({
           day,

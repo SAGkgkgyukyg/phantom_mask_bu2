@@ -7,6 +7,9 @@ import { Inventory } from '../entities/inventory.entity';
 import { PharmacyHour } from '../entities/pharmacyHour.entity';
 import { MaskType } from '../entities/maskType.entity';
 import { Weekday } from '../entities/weekday.entity';
+import { PurchaseHistory } from '../entities/purchaseHistory.entity';
+import { PurchaseDetail } from '../entities/purchaseDetail.entity';
+import { User } from '../entities/user.entity';
 
 @Module({
   imports: [
@@ -16,6 +19,9 @@ import { Weekday } from '../entities/weekday.entity';
       PharmacyHour,
       MaskType,
       Weekday,
+      PurchaseHistory,
+      PurchaseDetail,
+      User,
     ]),
   ],
   controllers: [StoreController],

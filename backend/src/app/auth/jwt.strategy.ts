@@ -15,7 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any) {
     // 檢查 payload 的必要欄位
-    if (!payload.sub || !payload.username) {
+    if (!payload.sub || !payload.username || !payload.role) {
       throw new UnauthorizedException('JWT payload 缺少必要資訊');
     }
 
@@ -28,6 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       userId: payload.sub,
       username: payload.username,
+      role: payload.role,
       iat: payload.iat,
       exp: payload.exp,
     };

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, Index } from 'typeorm';
 import { PurchaseHistory } from './purchaseHistory.entity';
 
 @Entity('users')
@@ -7,6 +7,7 @@ export class User {
   user_id: string;
 
   @Column({ type: 'varchar', length: 255, nullable: false })
+  @Index('idx_users_name') // 姓名索引（用於搜尋功能）
   name: string;
 
   @Column({
@@ -16,6 +17,7 @@ export class User {
     nullable: false,
     default: 0,
   })
+  @Index('idx_users_cash_balance') // 現金餘額索引（用於分析）
   cash_balance: number;
 
   // 關聯關係

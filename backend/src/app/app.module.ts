@@ -4,7 +4,6 @@ import { ConfigModule } from '@nestjs/config';
 import { AppDataSource } from '../data-source';
 import { AuthModule } from './auth/auth.module';
 import { StoreModule } from './store/store.module';
-import { UserModule } from './user/user.module';
 import { LoggerMiddleware } from '../middlewares/logger/logger.middleware';
 
 @Module({
@@ -16,7 +15,6 @@ import { LoggerMiddleware } from '../middlewares/logger/logger.middleware';
     TypeOrmModule.forRoot(AppDataSource.options),
     AuthModule,
     StoreModule,
-    UserModule,
   ],
 })
 export class AppModule implements NestModule {

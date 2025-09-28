@@ -31,6 +31,12 @@ async function bootstrap() {
       },
       'JWT-auth',
     )
+    .addTag('Authentication', '使用者認證相關 API')
+    .addTag('Stores', '商店相關 API (總覽)')
+    .addTag('Stores / Information', '商店資訊查詢與篩選功能')
+    .addTag('Stores / Analytics', '商店數據分析與統計功能')
+    .addTag('Stores / Purchase', '購買交易相關功能')
+    .addTag('Stores / Administration', '管理員專用功能')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
