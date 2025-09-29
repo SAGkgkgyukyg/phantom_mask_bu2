@@ -1,87 +1,132 @@
-# Response
-> The Current content is an **example template**; please edit it to fit your style and content.
+# Response - Test Version
+> 基於 phantom_mask_bu2 backend 專案的功能分析與實作報告
 
 ## Requirement Completion Rate
-* [ ] List pharmacies, optionally filtered by specific time and/or day of the week.
-  * Implemented at xxx API.
-* [ ] List all masks sold by a given pharmacy with an option to sort by name or price.
-  * Implemented at xxx API.
-* [ ] List all pharmacies that offer a number of mask products within a given price range, where the count is above, below, or between given thresholds.
-  * Implemented at xxx API.
-* [ ] Show the top N users who spent the most on masks during a specific date range.
-  * Implemented at xxx API.
-* [ ] Process a purchase where a user buys masks from multiple pharmacies at once.
-  *  Implemented at xxx API.
-* [ ] Update the stock quantity of an existing mask product by increasing or decreasing it.
-  * Implemented at xxx API.
-* [ ] Create or update multiple mask products for a pharmacy at once, including name, price, and stock quantity.
-  * Implemented at xxx API.
-* [ ] Search for pharmacies or masks by name and rank the results by relevance to the search term.
-  * Implemented at xxx API.
+* [x] List pharmacies, optionally filtered by specific time and/or day of the week.
+  * Implemented at `POST /stores/search` API.
+* [x] List all masks sold by a given pharmacy with an option to sort by name or price.
+  * Implemented at `POST /stores/inventory` API.
+* [x] List all pharmacies that offer a number of mask products within a given price range, where the count is above, below, or between given thresholds.
+  * Implemented at `POST /stores/filter-by-price-quantity` API.
+* [x] Show the top N users who spent the most on masks during a specific date range.
+  * Implemented at `POST /stores/top-spenders` API.
+* [x] Process a purchase where a user buys masks from multiple pharmacies at once.
+  * Implemented at `POST /stores/purchase` API.
+* [x] Update the stock quantity of an existing mask product by increasing or decreasing it.
+  * Implemented at `POST /stores/update-inventory` API.
+* [x] Create or update multiple mask products for a pharmacy at once, including name, price, and stock quantity.
+  * Implemented at `POST /stores/bulk-upsert-products` API.
+* [x] Search for pharmacies or masks by name and rank the results by relevance to the search term.
+  * Implemented at `POST /stores/search-pharmacies-masks` API.
 
 ## API Document
-> * Please describe how to use the API in the API documentation.
-> * You can edit by any format (e.g., Markdown or OpenAPI) or free tools (e.g., [hackMD](https://hackmd.io/), [postman](https://www.postman.com/), [google docs](https://docs.google.com/document/u/0/), or  [swagger](https://swagger.io/specification/)).
+
+本專案基於 **NestJS** 框架實作，使用 **TypeORM** 作為資料庫 ORM，並整合 **JWT 驗證** 和 **Swagger API 文件**。所有 API 端點都需要 JWT Bearer Token 驗證。
+按照以下步驟啟動伺服器後，可透過以下網址存取完整的 API 文件．或者參考 Demo網站：
+- **Swagger UI**: `http://localhost:3000/api/docs`
+- **Demo網站**: [示範網站](https://phantom-mask-bu2-xkrr.onrender.com/api/docs)
 
 ## Import Data Commands
-Please run these two script commands to migrate the data into the database.
+請執行以下腳本命令將資料匯入資料庫：
 
 ```bash
-$ rake import_data:pharmacies[PATH_TO_FILE]
-$ rake import_data:users[PATH_TO_FILE]
+# 原始資料轉換
+$ cd /backend/extractDB
+$ ./run.sh
+
+# 執行資料庫遷移
+$ cd backend
+$ npm run migration:run
+
 ```
 
-## Test Coverage Report
-I wrote down the xx unit tests for the APIs I built. Please check the test coverage report here.
+資料匯入腳本會自動處理：
+- 建立所有必要的資料表
+- 匯入藥局資料 (`pharmacies.json`)
+- 匯入使用者資料 (`users.json`)
 
-You can run the test script by using the command below:
+## Test Coverage Report
+我撰寫了 **49 個單元測試** 來覆蓋核心 API 功能。測試覆蓋率報告如下：
 
 ```bash
-bundle exec rspec spec
+File Coverage Summary:
+- Statements: 88.75%
+- Branches: 75.26%
+- Functions: 74.46%
+- Lines: 88.5%
+
+Test Suites: 1 passed
+Tests: 49 passed
+Time: 1.102s
+```
+您可以使用以下指令執行測試腳本：
+
+```bash
+# 執行所有測試
+$ npm run test
+
+# 執行測試覆蓋率報告
+$ npm run test:cov
 ```
 
 ## Deployment
-* To deploy the project locally using Docker, run the following commands:
 
+### 使用 Docker 部署
+- 確認已安裝 Docker
+- docker-compose.yml 已包含後端服務和 PostgreSQL 資料庫的設定
+- Dockerfile 已設定好建置環境
+
+#### 手動執行
 ```bash
-# Build the Docker image with development environment
-$ docker build --build-arg ENV=development -t my-project:1.0.0 .
-
-# Start the service using docker-compose
+# 1. 使用 docker-compose 啟動服務
 $ docker-compose up -d
-
-# Access the container to run data import tasks
-$ docker exec -it my-project bash
-$ rake import_data:pharmacies[PATH_TO_FILE]
-$ rake import_data:user[PATH_TO_FILE]
 ```
 
-* If you do not use Docker, please provide detailed instructions including the following:
-1. Environment Requirements
-2. Build & Run Steps
+#### 初始建置腳本
+```bash
+# 危險！完全重建所有服務，建議僅限初次部署使用，此操作將重置資料庫
+$ ./script/rebuild-full.sh
+# 僅重建後端服務（保持資料庫版本）
+$ ./script/rebuild-backend.sh
+```
+
+### 本地開發環境部署
+
+#### 環境需求
+- **Node.js**: 18.x 或更高版本
+- **PostgreSQL**: 13.x 或更高版本
+- **npm**: 8.x 或更高版本
+
+#### 建置與執行步驟
 
 ```bash
-# Install dependencies
-$ bundle install
+# 1. 安裝依賴套件
+$ npm install
 
-# Set up the database (sample config/database.yml may be provided)
-$ rails db:setup
+# 2. 設定環境變數，可參考 .env.example
+$ cp .env.example .env
 
-# Import data
-$ rake import_data:pharmacies[PATH_TO_FILE]
-$ rake import_data:user[PATH_TO_FILE]
+# 3. 原始資料轉換
+$ cd extractDB
+$ ./run.sh
 
-# Start the server
-$ rails server
+# 4. 建立資料庫並執行遷移
+$ npm run migration:run
+
+# 5. 啟動開發伺服器
+$ npm run start:dev
+
+# 6. 啟動正式環境伺服器
+$ npm run build
+$ npm run start:prod
+
 ```
 
-> * If any environment variables are required, please include instructions (e.g., create a .env file).
-> * If the project relies on special permissions, external services, or third-party APIs, be sure to include setup and initialization steps.
+### Demo網站
+Demo 網站已部署示範環境，您可以在此[示範網站](https://phantom-mask-bu2-xkrr.onrender.com/api/docs)上測試所有 API
 
-* If you have deployed the demo site, please provid the demo site url.
-> The demo site is ready on my AWS demo site; you can try any APIs on this demo site.
-
-**This ensures others can deploy the project successfully, whether or not they are using Docker.**
 
 ## Additional Data
-> If you have an ERD or any other materials that could help with understanding the system, please include them here.
+### 資料庫實體關係圖 (ERD)
+
+![ERD](./backend//info/erd.svg)
