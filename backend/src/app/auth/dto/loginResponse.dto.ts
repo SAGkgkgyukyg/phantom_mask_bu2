@@ -21,6 +21,11 @@ export class LoginResponseDto {
 
   @ApiProperty({
     description: '用戶資訊',
+    example: {
+      id: 'user-001',
+      username: 'wangxiaoming',
+      role: 'user',
+    },
   })
   user: {
     id: string;
