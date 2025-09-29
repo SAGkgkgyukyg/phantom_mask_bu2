@@ -120,13 +120,13 @@ docker system prune -f
 
 # 完全重置（會刪除所有資料）
 docker compose down -v
-./rebuild-full.sh
+./script/rebuild-full.sh
 ```
 
 ## 📋 開發流程建議
 
-1. **初次設定**：`./rebuild-full.sh`
-2. **日常開發**：修改代碼後執行 `./rebuild-backend.sh`
+1. **初次設定**：`./script/rebuild-full.sh`
+2. **日常開發**：修改代碼後執行 `./script/rebuild-backend.sh`
 3. **查看日誌**：`docker compose logs -f backend`
 4. **資料庫更新**：執行 migration 指令
 

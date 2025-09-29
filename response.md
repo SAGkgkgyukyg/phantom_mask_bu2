@@ -85,9 +85,9 @@ $ docker-compose up -d
 #### 初始建置腳本
 ```bash
 # 危險！完全重建所有服務，建議僅限初次部署使用，此操作將重置資料庫
-$ ./script/rebuild-full.sh
+$ ./backend/script/rebuild-full.sh
 # 僅重建後端服務（保持資料庫版本）
-$ ./script/rebuild-backend.sh
+$ ./backend/script/rebuild-backend.sh
 ```
 
 ### 本地開發環境部署
