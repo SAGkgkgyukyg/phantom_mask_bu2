@@ -8,49 +8,90 @@ import cors from 'cors';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // 記錄啟動資訊
+  console.log('🚀 Starting Phantom Mask API...');
+  console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 Port: ${process.env.PORT || 3000}`);
+  console.log(
+    `🔒 CORS Allowed Origins: ${process.env.ALLOWED_ORIGINS || 'All HTTPS origins (production) / All origins (development)'}`,
+  );
+
   // 安全標頭配置
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"], // Swagger 需要 inline styles
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'"],
-        fontSrc: ["'self'"],
-        objectSrc: ["'none'"],
-        mediaSrc: ["'self'"],
-        frameSrc: ["'none'"],
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"], // Swagger 需要 inline styles
+          scriptSrc: ["'self'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'"],
+          fontSrc: ["'self'"],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'"],
+          frameSrc: ["'none'"],
+        },
       },
-    },
-    crossOriginEmbedderPolicy: false, // 為了 Swagger 相容性
-  }));
+      crossOriginEmbedderPolicy: false, // 為了 Swagger 相容性
+    }),
+  );
 
   // CORS 配置
-  app.use(cors({
+  const corsOptions = {
     origin: (origin, callback) => {
-      // 允許的來源列表
-      const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
-        'http://localhost:3000',
-        'http://localhost:3001', 
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:3001'
-      ];
-      
-      // 允許沒有 origin 的請求（如 Postman、curl 等）
-      if (!origin) return callback(null, true);
-      
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('CORS policy violation'), false);
+      // 開發環境：允許所有來源
+      if (process.env.NODE_ENV === 'development') {
+        return callback(null, true);
       }
+
+      // 生產環境：檢查 ALLOWED_ORIGINS 環境變數
+      const allowedOrigins =
+        process.env.ALLOWED_ORIGINS?.split(',').map((o) => o.trim()) || [];
+
+      // 允許沒有 origin 的請求（API 工具、移動應用等）
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // 如果沒有設定特定的允許來源，允許所有 HTTPS 來源
+      if (allowedOrigins.length === 0) {
+        if (origin.startsWith('https://')) {
+          console.log(`CORS: Allowing HTTPS origin: ${origin}`);
+          return callback(null, true);
+        } else {
+          console.warn(`CORS: Blocking non-HTTPS origin: ${origin}`);
+          return callback(
+            new Error('Only HTTPS origins are allowed in production'),
+            false,
+          );
+        }
+      }
+
+      // 檢查來源是否在明確允許的列表中
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.warn(`CORS blocked origin: ${origin}`);
+      console.warn(`Allowed origins: ${allowedOrigins.join(', ')}`);
+      callback(new Error('CORS policy violation'), false);
     },
     credentials: true,
     optionsSuccessStatus: 200,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  }));
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+      'Access-Control-Request-Method',
+      'Access-Control-Request-Headers',
+    ],
+    exposedHeaders: ['Content-Length'],
+  };
+
+  app.use(cors(corsOptions));
 
   // 啟用全域驗證管道
   app.useGlobalPipes(
