@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, IsArray, Matches } from 'class-validator';
-import { WeekdayName } from '../enum/weekday.enum';
+import { WeekdayName } from '../../enum/weekday.enum';
 
 export class StoreFilterDto {
   @ApiProperty({
@@ -28,8 +28,8 @@ export class StoreFilterDto {
   end_time?: string;
 
   @ApiProperty({
-    description: '星期篩選（可以是星期名稱或縮寫，例如：["monday", "tue"]）',
-    example: ['monday', 'tuesday'],
+    description: '星期篩選（可以是星期名稱或縮寫，例如：["Monday", "Tue"]）',
+    example: ['Monday', 'Tuesday'],
     required: false,
     type: [String],
   })

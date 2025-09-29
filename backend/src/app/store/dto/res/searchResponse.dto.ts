@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SearchType } from './searchRequest.dto';
+import { SearchType } from '../req/searchRequest.dto';
 
 export class SearchResultItemDto {
   @ApiProperty({

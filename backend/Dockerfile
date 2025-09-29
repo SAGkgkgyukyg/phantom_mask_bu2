@@ -17,7 +17,7 @@ RUN npm install
 COPY . .
 
 # Copy and make startup script executable
-COPY ./script/start.sh ./
+COPY ./script/auto/start.sh ./
 RUN chmod +x start.sh
 
 # Build the application

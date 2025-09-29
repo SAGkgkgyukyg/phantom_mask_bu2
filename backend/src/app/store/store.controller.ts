@@ -17,34 +17,40 @@ import {
 import { StoreService } from './store.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
+import { CsrfGuard } from '../auth/csrf.guard';
 import { Roles } from '../auth/roles.decorator';
+// Request DTOs (用於方法參數)
 import {
-  StoreResponseDto,
   StoreFilterDto,
   InventoryFilterDto,
-  PharmacyInventoryResponseDto,
   PriceQuantityFilterDto,
-  PriceQuantityFilterResponseDto,
   TopSpendersFilterDto,
-  TopSpendersResponseDto,
   BulkPurchaseDto,
-  BulkPurchaseResponseDto,
   CancelTransactionDto,
-  CancelTransactionResponseDto,
   UpdateUserBalanceDto,
-  UpdateUserBalanceResponseDto,
   UpdateInventoryDto,
-  UpdateInventoryResponseDto,
   BulkUpsertMaskProductsDto,
-  BulkUpsertMaskProductsResponseDto,
   SearchRequestDto,
+} from './dto/req';
+
+// Response DTOs (用於 Swagger 和返回類型)
+import {
+  StoreResponseDto,
+  PharmacyInventoryResponseDto,
+  PriceQuantityFilterResponseDto,
+  TopSpendersResponseDto,
+  BulkPurchaseResponseDto,
+  CancelTransactionResponseDto,
+  UpdateUserBalanceResponseDto,
+  UpdateInventoryResponseDto,
+  BulkUpsertMaskProductsResponseDto,
   SearchResponseDto,
-} from './dto';
+} from './dto/res';
 
 @ApiTags('Stores')
 @ApiBearerAuth('JWT-auth')
 @Controller('stores')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, CsrfGuard) // 所有 endpoint 的基本保護
 export class StoreController {
   constructor(private readonly storeService: StoreService) {}
 
@@ -247,7 +253,7 @@ export class StoreController {
 
   @ApiTags('Stores / Administration')
   @Post('update-user-balance')
-  @UseGuards(RolesGuard)
+  @UseGuards(RolesGuard) // 額外的管理員權限檢查
   @Roles('admin')
   @ApiOperation({
     summary: '管理員更新使用者現金餘額',
@@ -285,7 +291,7 @@ export class StoreController {
 
   @ApiTags('Stores / Administration')
   @Post('update-inventory')
-  @UseGuards(RolesGuard)
+  @UseGuards(RolesGuard) // 額外的管理員權限檢查
   @Roles('admin')
   @ApiOperation({
     summary: '管理員更新藥局口罩庫存數量',
@@ -321,7 +327,7 @@ export class StoreController {
 
   @ApiTags('Stores / Administration')
   @Post('bulk-upsert-products')
-  @UseGuards(RolesGuard)
+  @UseGuards(RolesGuard) // 額外的管理員權限檢查
   @Roles('admin')
   @ApiOperation({
     summary: '管理員批量新增或更新藥局口罩產品',

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsUUID, IsArray, ValidateNested, ArrayMinSize } from 'class-validator';
 import { Type } from 'class-transformer';
-import { MaskProductItemDto } from './maskProductItem.dto';
+import { MaskProductItemDto } from '../maskProductItem.dto';
 
 export class BulkUpsertMaskProductsDto {
   @ApiProperty({

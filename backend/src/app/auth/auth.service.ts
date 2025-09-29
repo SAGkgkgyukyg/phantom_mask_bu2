@@ -31,9 +31,21 @@ export class AuthService {
     const adminUsername = this.configService.get<string>('ADMIN_USER_USERNAME');
     const adminPassword = this.configService.get<string>('ADMIN_USER_PASSWORD');
 
+    // 調試：記錄環境變數狀態（不記錄密碼）
+    console.log('Environment variables status:', {
+      normalUsername: normalUsername ? 'SET' : 'NOT_SET',
+      normalPassword: normalPassword ? 'SET' : 'NOT_SET',
+      adminUsername: adminUsername ? 'SET' : 'NOT_SET',
+      adminPassword: adminPassword ? 'SET' : 'NOT_SET',
+    });
+
+    // 調試：記錄登入嘗試
+    console.log(`Login attempt for username: ${username}`);
+
     // 驗證普通使用者
     if (username === normalUsername && normalPassword) {
       const isValidPassword = await bcrypt.compare(password, normalPassword);
+      console.log(`Normal user password validation result: ${isValidPassword}`);
       if (isValidPassword) {
         return {
           id: 'user-001',
@@ -46,6 +58,7 @@ export class AuthService {
     // 驗證管理者
     if (username === adminUsername && adminPassword) {
       const isValidPassword = await bcrypt.compare(password, adminPassword);
+      console.log(`Admin user password validation result: ${isValidPassword}`);
       if (isValidPassword) {
         return {
           id: 'admin-001',
@@ -55,6 +68,7 @@ export class AuthService {
       }
     }
 
+    console.log('Authentication failed: no matching user found');
     return null;
   }
 

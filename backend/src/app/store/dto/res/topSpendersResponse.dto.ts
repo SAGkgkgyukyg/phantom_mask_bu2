@@ -1,4 +1,4 @@
-import { MaskType } from '../../entities/maskType.entity';
+import { MaskType } from '../../../entities/maskType.entity';
 
 /**
  * 購買詳情資料傳輸物件

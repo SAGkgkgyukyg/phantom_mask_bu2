@@ -1,22 +1,7 @@
-export * from './storeFilter.dto';
-export * from './storeResponse.dto';
-export * from './inventoryFilter.dto';
-export * from './pharmacyInventoryResponse.dto';
-export * from './priceQuantityFilter.dto';
-export * from './priceQuantityFilterResponse.dto';
-export * from './topSpendersFilter.dto';
-export * from './topSpendersResponse.dto';
+// 統一匯出所有 DTOs
+export * from './req';          // Request DTOs
+export * from './res';          // Response DTOs
+
+// 共用的 DTOs (不屬於請求或回應的特定類型)
 export * from './purchaseItem.dto';
-export * from './bulkPurchase.dto';
-export * from './bulkPurchaseResponse.dto';
-export * from './cancelTransaction.dto';
-export * from './cancelTransactionResponse.dto';
-export * from './updateUserBalance.dto';
-export * from './updateUserBalanceResponse.dto';
-export * from './updateInventory.dto';
-export * from './updateInventoryResponse.dto';
 export * from './maskProductItem.dto';
-export * from './bulkUpsertMaskProducts.dto';
-export * from './bulkUpsertMaskProductsResponse.dto';
-export * from './searchRequest.dto';
-export * from './searchResponse.dto';

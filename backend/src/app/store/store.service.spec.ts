@@ -13,22 +13,16 @@ import {
 } from '../entities';
 import {
   StoreFilterDto,
-  StoreResponseDto,
   InventoryFilterDto,
-  PharmacyInventoryResponseDto,
   PriceQuantityFilterDto,
   BulkPurchaseDto,
   CancelTransactionDto,
   SearchRequestDto,
-  TopSpendersFilterDto,
-  UpdateUserBalanceDto,
-  UpdateInventoryDto,
-  BulkUpsertMaskProductsDto,
   SortBy,
   SortOrder,
-} from './dto';
-import { QuantityThresholdType } from './dto/priceQuantityFilter.dto';
-import { SearchType } from './dto/searchRequest.dto';
+  QuantityThresholdType,
+  SearchType,
+} from './dto/req';
 import { TransactionStatus } from './enum/transaction-status.enum';
 
 describe('StoreService', () => {
@@ -111,7 +105,9 @@ describe('StoreService', () => {
     };
 
     mockDataSource = {
-      transaction: jest.fn().mockImplementation((callback) => callback(mockManager)),
+      transaction: jest
+        .fn()
+        .mockImplementation((callback) => callback(mockManager)),
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -199,8 +195,13 @@ describe('StoreService', () => {
 
       const result = await service.getAllStores();
 
-      expect(mockPharmacyRepository.createQueryBuilder).toHaveBeenCalledWith('pharmacy');
-      expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('pharmacy.inventories', 'inventories');
+      expect(mockPharmacyRepository.createQueryBuilder).toHaveBeenCalledWith(
+        'pharmacy',
+      );
+      expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
+        'pharmacy.inventories',
+        'inventories',
+      );
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
         pharmacy_id: 'pharmacy-1',
@@ -240,8 +241,12 @@ describe('StoreService', () => {
         start_time: '09:00',
       };
 
-      await expect(service.getAllStores(filterDto)).rejects.toThrow(BadRequestException);
-      await expect(service.getAllStores(filterDto)).rejects.toThrow('start_time 和 end_time 必須同時提供');
+      await expect(service.getAllStores(filterDto)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.getAllStores(filterDto)).rejects.toThrow(
+        'start_time 和 end_time 必須同時提供',
+      );
     });
 
     it('should throw BadRequestException when only end_time is provided', async () => {
@@ -249,8 +254,12 @@ describe('StoreService', () => {
         end_time: '18:00',
       };
 
-      await expect(service.getAllStores(filterDto)).rejects.toThrow(BadRequestException);
-      await expect(service.getAllStores(filterDto)).rejects.toThrow('start_time 和 end_time 必須同時提供');
+      await expect(service.getAllStores(filterDto)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.getAllStores(filterDto)).rejects.toThrow(
+        'start_time 和 end_time 必須同時提供',
+      );
     });
 
     it('should apply filters correctly when both start_time and end_time are provided', async () => {
@@ -266,7 +275,7 @@ describe('StoreService', () => {
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'weekday.short_name IN (:...weekdays)',
-        { weekdays: ['Mon'] }
+        { weekdays: ['Mon'] },
       );
       // Check that time filtering was called (it uses Brackets which is a function)
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledTimes(2);
@@ -347,7 +356,10 @@ describe('StoreService', () => {
 
       const result = await service.getPharmacyInventory(filterDto);
 
-      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith('maskType.display_name', SortOrder.ASC);
+      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith(
+        'maskType.display_name',
+        SortOrder.ASC,
+      );
       expect(result.pharmacy_id).toBe('pharmacy-1');
       expect(result.inventories).toHaveLength(1);
     });
@@ -355,8 +367,12 @@ describe('StoreService', () => {
     it('should throw NotFoundException when pharmacy not found', async () => {
       mockQueryBuilder.getOne.mockResolvedValue(null);
 
-      await expect(service.getPharmacyInventory(filterDto)).rejects.toThrow(NotFoundException);
-      await expect(service.getPharmacyInventory(filterDto)).rejects.toThrow('找不到 ID 為 pharmacy-1 的藥局');
+      await expect(service.getPharmacyInventory(filterDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.getPharmacyInventory(filterDto)).rejects.toThrow(
+        '找不到 ID 為 pharmacy-1 的藥局',
+      );
     });
 
     it('should sort by price when specified', async () => {
@@ -378,8 +394,14 @@ describe('StoreService', () => {
 
       await service.getPharmacyInventory(priceFilterDto);
 
-      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith('inventories.price', SortOrder.DESC);
-      expect(mockQueryBuilder.addOrderBy).toHaveBeenCalledWith('maskType.display_name', 'ASC');
+      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith(
+        'inventories.price',
+        SortOrder.DESC,
+      );
+      expect(mockQueryBuilder.addOrderBy).toHaveBeenCalledWith(
+        'maskType.display_name',
+        'ASC',
+      );
     });
   });
 
@@ -392,8 +414,12 @@ describe('StoreService', () => {
         quantity_threshold: 10,
       };
 
-      await expect(service.getPharmaciesByPriceAndQuantity(filterDto)).rejects.toThrow(BadRequestException);
-      await expect(service.getPharmaciesByPriceAndQuantity(filterDto)).rejects.toThrow('價格下限不能大於價格上限');
+      await expect(
+        service.getPharmaciesByPriceAndQuantity(filterDto),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.getPharmaciesByPriceAndQuantity(filterDto),
+      ).rejects.toThrow('價格下限不能大於價格上限');
     });
 
     it('should throw BadRequestException when threshold_type is BETWEEN but quantity_threshold_max is undefined', async () => {
@@ -402,8 +428,12 @@ describe('StoreService', () => {
         quantity_threshold: 10,
       };
 
-      await expect(service.getPharmaciesByPriceAndQuantity(filterDto)).rejects.toThrow(BadRequestException);
-      await expect(service.getPharmaciesByPriceAndQuantity(filterDto)).rejects.toThrow('當門檻類型為 between 時，必須提供數量上限門檻值');
+      await expect(
+        service.getPharmaciesByPriceAndQuantity(filterDto),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.getPharmaciesByPriceAndQuantity(filterDto),
+      ).rejects.toThrow('當門檻類型為 between 時，必須提供數量上限門檻值');
     });
 
     it('should throw BadRequestException when quantity_threshold >= quantity_threshold_max in BETWEEN type', async () => {
@@ -413,8 +443,12 @@ describe('StoreService', () => {
         quantity_threshold_max: 50, // Equal to threshold
       };
 
-      await expect(service.getPharmaciesByPriceAndQuantity(filterDto)).rejects.toThrow(BadRequestException);
-      await expect(service.getPharmaciesByPriceAndQuantity(filterDto)).rejects.toThrow('數量下限門檻不能大於或等於上限門檻');
+      await expect(
+        service.getPharmaciesByPriceAndQuantity(filterDto),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.getPharmaciesByPriceAndQuantity(filterDto),
+      ).rejects.toThrow('數量下限門檻不能大於或等於上限門檻');
     });
 
     it('should throw BadRequestException when quantity_threshold > quantity_threshold_max in BETWEEN type', async () => {
@@ -424,8 +458,12 @@ describe('StoreService', () => {
         quantity_threshold_max: 50, // Less than threshold
       };
 
-      await expect(service.getPharmaciesByPriceAndQuantity(filterDto)).rejects.toThrow(BadRequestException);
-      await expect(service.getPharmaciesByPriceAndQuantity(filterDto)).rejects.toThrow('數量下限門檻不能大於或等於上限門檻');
+      await expect(
+        service.getPharmaciesByPriceAndQuantity(filterDto),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.getPharmaciesByPriceAndQuantity(filterDto),
+      ).rejects.toThrow('數量下限門檻不能大於或等於上限門檻');
     });
 
     it('should filter pharmacies by price and quantity successfully', async () => {
@@ -463,8 +501,14 @@ describe('StoreService', () => {
 
       const result = await service.getPharmaciesByPriceAndQuantity(filterDto);
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('inventories.price >= :min_price', { min_price: 20 });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('inventories.price <= :max_price', { max_price: 50 });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'inventories.price >= :min_price',
+        { min_price: 20 },
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'inventories.price <= :max_price',
+        { max_price: 50 },
+      );
       expect(result).toHaveLength(1);
       expect(result[0].total_filtered_products).toBe(1);
     });
@@ -502,7 +546,10 @@ describe('StoreService', () => {
 
       const result = await service.getPharmaciesByPriceAndQuantity(filterDto);
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('inventories.quantity < :quantity_threshold', { quantity_threshold: 30 });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'inventories.quantity < :quantity_threshold',
+        { quantity_threshold: 30 },
+      );
       expect(result).toHaveLength(1);
       expect(result[0].total_filtered_products).toBe(1);
     });
@@ -541,8 +588,14 @@ describe('StoreService', () => {
 
       const result = await service.getPharmaciesByPriceAndQuantity(filterDto);
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('inventories.quantity >= :quantity_threshold', { quantity_threshold: 50 });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('inventories.quantity <= :quantity_threshold_max', { quantity_threshold_max: 150 });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'inventories.quantity >= :quantity_threshold',
+        { quantity_threshold: 50 },
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'inventories.quantity <= :quantity_threshold_max',
+        { quantity_threshold_max: 150 },
+      );
       expect(result).toHaveLength(1);
       expect(result[0].total_filtered_products).toBe(1);
     });
@@ -590,10 +643,16 @@ describe('StoreService', () => {
         create: jest.fn(),
       };
 
-      mockDataSource.transaction.mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction.mockImplementation((callback: any) =>
+        callback(mockManager),
+      );
 
-      await expect(service.processBulkPurchase(purchaseDto)).rejects.toThrow(NotFoundException);
-      await expect(service.processBulkPurchase(purchaseDto)).rejects.toThrow('找不到 ID 為 nonexistent-user 的使用者');
+      await expect(service.processBulkPurchase(purchaseDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.processBulkPurchase(purchaseDto)).rejects.toThrow(
+        '找不到 ID 為 nonexistent-user 的使用者',
+      );
     });
 
     it('should throw NotFoundException when pharmacy not found', async () => {
@@ -609,7 +668,8 @@ describe('StoreService', () => {
       };
 
       const mockManager = {
-        findOne: jest.fn()
+        findOne: jest
+          .fn()
           .mockResolvedValueOnce(mockUser) // User found
           .mockResolvedValueOnce(null), // Pharmacy not found
         save: jest.fn(),
@@ -617,9 +677,13 @@ describe('StoreService', () => {
         create: jest.fn(),
       };
 
-      mockDataSource.transaction.mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction.mockImplementation((callback: any) =>
+        callback(mockManager),
+      );
 
-      await expect(service.processBulkPurchase(purchaseDto)).rejects.toThrow(NotFoundException);
+      await expect(service.processBulkPurchase(purchaseDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when user balance is insufficient', async () => {
@@ -663,31 +727,42 @@ describe('StoreService', () => {
       };
 
       const mockManager = {
-        findOne: jest.fn()
-          .mockImplementation((entity, options) => {
-            if (entity === User && options?.where?.user_id === 'user-1') {
-              return Promise.resolve(mockUser);
-            }
-            if (entity === Pharmacy && options?.where?.pharmacy_id === 'pharmacy-1') {
-              return Promise.resolve(mockPharmacy);
-            }
-            if (entity === MaskType && options?.where?.mask_type_id === 'mask-1') {
-              return Promise.resolve(mockMaskType);
-            }
-            if (entity === Inventory) {
-              return Promise.resolve(mockInventory);
-            }
-            return Promise.resolve(null);
-          }),
+        findOne: jest.fn().mockImplementation((entity, options) => {
+          if (entity === User && options?.where?.user_id === 'user-1') {
+            return Promise.resolve(mockUser);
+          }
+          if (
+            entity === Pharmacy &&
+            options?.where?.pharmacy_id === 'pharmacy-1'
+          ) {
+            return Promise.resolve(mockPharmacy);
+          }
+          if (
+            entity === MaskType &&
+            options?.where?.mask_type_id === 'mask-1'
+          ) {
+            return Promise.resolve(mockMaskType);
+          }
+          if (entity === Inventory) {
+            return Promise.resolve(mockInventory);
+          }
+          return Promise.resolve(null);
+        }),
         save: jest.fn(),
         update: jest.fn(),
         create: jest.fn(),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
-      await expect(service.processBulkPurchase(purchaseDto)).rejects.toThrow(BadRequestException);
-      await expect(service.processBulkPurchase(purchaseDto)).rejects.toThrow('使用者餘額不足，目前餘額: 10，所需金額: 50');
+      await expect(service.processBulkPurchase(purchaseDto)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.processBulkPurchase(purchaseDto)).rejects.toThrow(
+        '使用者餘額不足，目前餘額: 10，所需金額: 50',
+      );
     });
 
     it('should process bulk purchase transaction flow', async () => {
@@ -705,7 +780,8 @@ describe('StoreService', () => {
       };
 
       const mockManager = {
-        findOne: jest.fn()
+        findOne: jest
+          .fn()
           .mockResolvedValueOnce(mockUser) // User found
           .mockResolvedValueOnce(mockPharmacy) // Pharmacy found
           .mockResolvedValueOnce(mockMaskType) // MaskType found
@@ -716,7 +792,9 @@ describe('StoreService', () => {
       };
 
       // Reset the mock to return the specific manager for this test
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
       const result = await service.processBulkPurchase(purchaseDto);
 
@@ -769,7 +847,9 @@ describe('StoreService', () => {
 
       const result = await service.getTopSpenders(filterDto);
 
-      expect(mockPurchaseHistoryRepository.createQueryBuilder).toHaveBeenCalledWith('ph');
+      expect(
+        mockPurchaseHistoryRepository.createQueryBuilder,
+      ).toHaveBeenCalledWith('ph');
       expect(result).toEqual({
         date_range: {
           start_date: '2023-01-01',
@@ -795,7 +875,9 @@ describe('StoreService', () => {
         top_n: 5,
       };
 
-      await expect(service.getTopSpenders(filterDto)).rejects.toThrow('開始日期必須早於結束日期');
+      await expect(service.getTopSpenders(filterDto)).rejects.toThrow(
+        '開始日期必須早於結束日期',
+      );
     });
 
     it('should handle end date without time correctly', async () => {
@@ -810,7 +892,9 @@ describe('StoreService', () => {
       await service.getTopSpenders(filterDto);
 
       // Should not throw error and should process correctly
-      expect(mockPurchaseHistoryRepository.createQueryBuilder).toHaveBeenCalled();
+      expect(
+        mockPurchaseHistoryRepository.createQueryBuilder,
+      ).toHaveBeenCalled();
     });
   });
 
@@ -833,12 +917,20 @@ describe('StoreService', () => {
         update: jest.fn(),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
       const result = await service.updateUserBalance(updateDto, adminId);
 
-      expect(mockManager.findOne).toHaveBeenCalledWith(User, { where: { user_id: 'user-1' } });
-      expect(mockManager.update).toHaveBeenCalledWith(User, { user_id: 'user-1' }, { cash_balance: 1500 });
+      expect(mockManager.findOne).toHaveBeenCalledWith(User, {
+        where: { user_id: 'user-1' },
+      });
+      expect(mockManager.update).toHaveBeenCalledWith(
+        User,
+        { user_id: 'user-1' },
+        { cash_balance: 1500 },
+      );
       expect(result).toEqual({
         user_id: 'user-1',
         user_name: 'Test User',
@@ -862,10 +954,16 @@ describe('StoreService', () => {
         update: jest.fn(),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
-      await expect(service.updateUserBalance(updateDto, adminId)).rejects.toThrow(NotFoundException);
-      await expect(service.updateUserBalance(updateDto, adminId)).rejects.toThrow('找不到 ID 為 nonexistent-user 的使用者');
+      await expect(
+        service.updateUserBalance(updateDto, adminId),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateUserBalance(updateDto, adminId),
+      ).rejects.toThrow('找不到 ID 為 nonexistent-user 的使用者');
     });
   });
 
@@ -893,14 +991,17 @@ describe('StoreService', () => {
       } as Inventory;
 
       const mockManager = {
-        findOne: jest.fn()
+        findOne: jest
+          .fn()
           .mockResolvedValueOnce(mockPharmacy)
           .mockResolvedValueOnce(mockMaskType)
           .mockResolvedValueOnce(mockInventory),
         update: jest.fn(),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
       const result = await service.updateInventory(updateDto);
 
@@ -928,10 +1029,16 @@ describe('StoreService', () => {
         update: jest.fn(),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
-      await expect(service.updateInventory(updateDto)).rejects.toThrow(NotFoundException);
-      await expect(service.updateInventory(updateDto)).rejects.toThrow('找不到 ID 為 nonexistent-pharmacy 的藥局');
+      await expect(service.updateInventory(updateDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.updateInventory(updateDto)).rejects.toThrow(
+        '找不到 ID 為 nonexistent-pharmacy 的藥局',
+      );
     });
 
     it('should throw NotFoundException when inventory not found', async () => {
@@ -952,17 +1059,24 @@ describe('StoreService', () => {
       } as MaskType;
 
       const mockManager = {
-        findOne: jest.fn()
+        findOne: jest
+          .fn()
           .mockResolvedValueOnce(mockPharmacy) // First call - pharmacy found
           .mockResolvedValueOnce(mockMaskType) // Second call - mask type found
           .mockResolvedValueOnce(null), // Third call - inventory not found
         update: jest.fn(),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
-      await expect(service.updateInventory(updateDto)).rejects.toThrow(NotFoundException);
-      await expect(service.updateInventory(updateDto)).rejects.toThrow(`找不到 ID 為 ${updateDto.pharmacy_id} 的藥局`);
+      await expect(service.updateInventory(updateDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.updateInventory(updateDto)).rejects.toThrow(
+        `找不到 ID 為 ${updateDto.pharmacy_id} 的藥局`,
+      );
     });
   });
 
@@ -1004,19 +1118,24 @@ describe('StoreService', () => {
       } as Inventory;
 
       const mockManager = {
-        findOne: jest.fn()
+        findOne: jest
+          .fn()
           .mockResolvedValueOnce(mockPharmacy) // Pharmacy found
           .mockResolvedValueOnce(null) // MaskType not found (new)
           .mockResolvedValueOnce(null), // Inventory not found (new)
-        save: jest.fn()
+        save: jest
+          .fn()
           .mockResolvedValueOnce(mockNewMaskType)
           .mockResolvedValueOnce(mockNewInventory),
-        create: jest.fn()
+        create: jest
+          .fn()
           .mockReturnValueOnce(mockNewMaskType)
           .mockReturnValueOnce(mockNewInventory),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
       const result = await service.bulkUpsertMaskProducts(upsertDto);
 
@@ -1038,10 +1157,16 @@ describe('StoreService', () => {
         create: jest.fn(),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
-      await expect(service.bulkUpsertMaskProducts(upsertDto)).rejects.toThrow(NotFoundException);
-      await expect(service.bulkUpsertMaskProducts(upsertDto)).rejects.toThrow('找不到 ID 為 nonexistent-pharmacy 的藥局');
+      await expect(service.bulkUpsertMaskProducts(upsertDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.bulkUpsertMaskProducts(upsertDto)).rejects.toThrow(
+        '找不到 ID 為 nonexistent-pharmacy 的藥局',
+      );
     });
 
     it('should throw NotFoundException when provided mask_type_id is not found', async () => {
@@ -1066,24 +1191,35 @@ describe('StoreService', () => {
       } as Pharmacy;
 
       const mockManager = {
-        findOne: jest.fn()
-          .mockImplementation((entity, options) => {
-            if (entity === Pharmacy && options?.where?.pharmacy_id === 'pharmacy-1') {
-              return Promise.resolve(mockPharmacy);
-            }
-            if (entity === MaskType && options?.where?.mask_type_id === 'nonexistent-mask') {
-              return Promise.resolve(null);
-            }
+        findOne: jest.fn().mockImplementation((entity, options) => {
+          if (
+            entity === Pharmacy &&
+            options?.where?.pharmacy_id === 'pharmacy-1'
+          ) {
+            return Promise.resolve(mockPharmacy);
+          }
+          if (
+            entity === MaskType &&
+            options?.where?.mask_type_id === 'nonexistent-mask'
+          ) {
             return Promise.resolve(null);
-          }),
+          }
+          return Promise.resolve(null);
+        }),
         save: jest.fn(),
         create: jest.fn(),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
-      await expect(service.bulkUpsertMaskProducts(upsertDto)).rejects.toThrow(NotFoundException);
-      await expect(service.bulkUpsertMaskProducts(upsertDto)).rejects.toThrow('找不到 ID 為 nonexistent-mask 的口罩類型');
+      await expect(service.bulkUpsertMaskProducts(upsertDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.bulkUpsertMaskProducts(upsertDto)).rejects.toThrow(
+        '找不到 ID 為 nonexistent-mask 的口罩類型',
+      );
     });
 
     it('should update existing mask type when mask_type_id is provided and found', async () => {
@@ -1124,7 +1260,8 @@ describe('StoreService', () => {
       } as Inventory;
 
       const mockManager = {
-        findOne: jest.fn()
+        findOne: jest
+          .fn()
           .mockResolvedValueOnce(mockPharmacy) // Pharmacy found
           .mockResolvedValueOnce(mockExistingMaskType) // MaskType found
           .mockResolvedValueOnce(mockExistingInventory), // Inventory found
@@ -1132,18 +1269,23 @@ describe('StoreService', () => {
         create: jest.fn(),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
       const result = await service.bulkUpsertMaskProducts(upsertDto);
 
       expect(result.created_count).toBe(0);
       expect(result.updated_count).toBe(1);
-      expect(mockManager.save).toHaveBeenCalledWith(MaskType, expect.objectContaining({
-        brand: 'Updated Brand',
-        color: 'Updated Color',
-        pack_size: 60,
-        display_name: 'Updated Brand Updated Color (60pcs)',
-      }));
+      expect(mockManager.save).toHaveBeenCalledWith(
+        MaskType,
+        expect.objectContaining({
+          brand: 'Updated Brand',
+          color: 'Updated Color',
+          pack_size: 60,
+          display_name: 'Updated Brand Updated Color (60pcs)',
+        }),
+      );
     });
 
     it('should update existing mask type by brand, color, pack_size when mask exists', async () => {
@@ -1183,7 +1325,8 @@ describe('StoreService', () => {
       } as Inventory;
 
       const mockManager = {
-        findOne: jest.fn()
+        findOne: jest
+          .fn()
           .mockResolvedValueOnce(mockPharmacy) // Pharmacy found
           .mockResolvedValueOnce(mockExistingMaskType) // MaskType found by brand, color, pack_size
           .mockResolvedValueOnce(mockExistingInventory), // Inventory found
@@ -1191,15 +1334,20 @@ describe('StoreService', () => {
         create: jest.fn(),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
       const result = await service.bulkUpsertMaskProducts(upsertDto);
 
       expect(result.created_count).toBe(0);
       expect(result.updated_count).toBe(1);
-      expect(mockManager.save).toHaveBeenCalledWith(MaskType, expect.objectContaining({
-        display_name: 'Updated Display Name',
-      }));
+      expect(mockManager.save).toHaveBeenCalledWith(
+        MaskType,
+        expect.objectContaining({
+          display_name: 'Updated Display Name',
+        }),
+      );
     });
 
     it('should create new inventory when mask type exists but inventory does not', async () => {
@@ -1239,7 +1387,8 @@ describe('StoreService', () => {
       } as Inventory;
 
       const mockManager = {
-        findOne: jest.fn()
+        findOne: jest
+          .fn()
           .mockResolvedValueOnce(mockPharmacy) // Pharmacy found
           .mockResolvedValueOnce(mockExistingMaskType) // MaskType found by brand, color, pack_size
           .mockResolvedValueOnce(null), // Inventory not found (create new)
@@ -1247,18 +1396,23 @@ describe('StoreService', () => {
         create: jest.fn().mockReturnValue(mockNewInventory),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
       const result = await service.bulkUpsertMaskProducts(upsertDto);
 
       expect(result.created_count).toBe(1);
       expect(result.updated_count).toBe(0);
-      expect(mockManager.create).toHaveBeenCalledWith(Inventory, expect.objectContaining({
-        pharmacy_id: 'pharmacy-1',
-        mask_type_id: 'mask-1',
-        price: 25,
-        quantity: 100,
-      }));
+      expect(mockManager.create).toHaveBeenCalledWith(
+        Inventory,
+        expect.objectContaining({
+          pharmacy_id: 'pharmacy-1',
+          mask_type_id: 'mask-1',
+          price: 25,
+          quantity: 100,
+        }),
+      );
     });
   });
 
@@ -1299,10 +1453,16 @@ describe('StoreService', () => {
         update: jest.fn(),
       };
 
-      mockDataSource.transaction.mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction.mockImplementation((callback: any) =>
+        callback(mockManager),
+      );
 
-      await expect(service.cancelTransaction(cancelDto)).rejects.toThrow(NotFoundException);
-      await expect(service.cancelTransaction(cancelDto)).rejects.toThrow('找不到 ID 為 nonexistent-user 的使用者');
+      await expect(service.cancelTransaction(cancelDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.cancelTransaction(cancelDto)).rejects.toThrow(
+        '找不到 ID 為 nonexistent-user 的使用者',
+      );
     });
 
     it('should process cancel transaction flow', async () => {
@@ -1314,14 +1474,17 @@ describe('StoreService', () => {
       };
 
       const mockManager = {
-        findOne: jest.fn()
+        findOne: jest
+          .fn()
           .mockResolvedValueOnce(mockPurchaseHistory.user) // Return user first
           .mockResolvedValueOnce(mockPurchaseHistory), // Then return purchase history
         update: jest.fn(),
       };
 
       // Reset the mock to return the specific manager for this test
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
       const result = await service.cancelTransaction(cancelDto);
 
@@ -1369,7 +1532,8 @@ describe('StoreService', () => {
       };
 
       const mockManager = {
-        findOne: jest.fn()
+        findOne: jest
+          .fn()
           .mockResolvedValueOnce(mockUser) // User found
           .mockResolvedValueOnce(mockPurchaseHistory) // Purchase history found
           .mockResolvedValueOnce(null), // Inventory not found (will create new)
@@ -1378,17 +1542,22 @@ describe('StoreService', () => {
         create: jest.fn().mockReturnValue({}),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
       const result = await service.cancelTransaction(cancelDto);
 
       expect(result).toBeDefined();
-      expect(mockManager.create).toHaveBeenCalledWith(Inventory, expect.objectContaining({
-        pharmacy_id: 'pharmacy-1',
-        mask_type_id: 'mask-1',
-        price: 25,
-        quantity: 2,
-      }));
+      expect(mockManager.create).toHaveBeenCalledWith(
+        Inventory,
+        expect.objectContaining({
+          pharmacy_id: 'pharmacy-1',
+          mask_type_id: 'mask-1',
+          price: 25,
+          quantity: 2,
+        }),
+      );
     });
 
     it('should update existing inventory when found during cancellation', async () => {
@@ -1436,7 +1605,8 @@ describe('StoreService', () => {
       };
 
       const mockManager = {
-        findOne: jest.fn()
+        findOne: jest
+          .fn()
           .mockResolvedValueOnce(mockUser) // User found
           .mockResolvedValueOnce(mockPurchaseHistory) // Purchase history found
           .mockResolvedValueOnce(mockInventory), // Inventory found
@@ -1445,7 +1615,9 @@ describe('StoreService', () => {
         create: jest.fn(),
       };
 
-      mockDataSource.transaction = jest.fn().mockImplementation((callback: any) => callback(mockManager));
+      mockDataSource.transaction = jest
+        .fn()
+        .mockImplementation((callback: any) => callback(mockManager));
 
       const result = await service.cancelTransaction(cancelDto);
 
@@ -1453,7 +1625,7 @@ describe('StoreService', () => {
       expect(mockManager.update).toHaveBeenCalledWith(
         Inventory,
         { inventory_id: 'inventory-1' },
-        { quantity: 52 } // 50 + 2 returned quantity
+        { quantity: 52 }, // 50 + 2 returned quantity
       );
     });
   });
@@ -1536,7 +1708,10 @@ describe('StoreService', () => {
     });
 
     it('should return 0 for no match', () => {
-      const relevance = service['calculateRelevance']('test', 'completely different');
+      const relevance = service['calculateRelevance'](
+        'test',
+        'completely different',
+      );
       expect(relevance).toBe(0);
     });
 

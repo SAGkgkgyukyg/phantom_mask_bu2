@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsUUID, IsArray, ValidateNested, ArrayMinSize } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PurchaseItemDto } from './purchaseItem.dto';
+import { PurchaseItemDto } from '../purchaseItem.dto';
 
 export class BulkPurchaseDto {
   @ApiProperty({

@@ -11,42 +11,44 @@ import { User } from '../entities/user.entity';
 import { Inventory } from '../entities/inventory.entity';
 import { PurchaseDetail } from '../entities/purchaseDetail.entity';
 import { MaskType } from '../entities/maskType.entity';
-import { StoreFilterDto } from './dto/storeFilter.dto';
+// Request DTOs
+import {
+  StoreFilterDto,
+  InventoryFilterDto,
+  PriceQuantityFilterDto,
+  TopSpendersFilterDto,
+  BulkPurchaseDto,
+  CancelTransactionDto,
+  UpdateUserBalanceDto,
+  UpdateInventoryDto,
+  BulkUpsertMaskProductsDto,
+  SearchRequestDto,
+} from './dto/req';
+
+// Response DTOs
 import {
   StoreResponseDto,
-  TopSpendersFilterDto,
+  PharmacyInventoryResponseDto,
+  PriceQuantityFilterResponseDto,
   TopSpendersResponseDto,
-  BulkPurchaseDto,
   BulkPurchaseResponseDto,
-  CancelTransactionDto,
   CancelTransactionResponseDto,
-  UpdateUserBalanceDto,
   UpdateUserBalanceResponseDto,
-  UpdateInventoryDto,
   UpdateInventoryResponseDto,
-  BulkUpsertMaskProductsDto,
   BulkUpsertMaskProductsResponseDto,
-  SearchRequestDto,
   SearchResponseDto,
-  SearchType,
-} from './dto';
+} from './dto/res';
+
+// Enums and other types
 import {
   WeekdayAbbreviation,
   WeekdayName,
   WeekdayNameToAbbreviationMap,
 } from './enum/weekday.enum';
 import { TransactionStatus } from './enum/transaction-status.enum';
-import {
-  InventoryFilterDto,
-  SortBy,
-  SortOrder,
-} from './dto/inventoryFilter.dto';
-import { PharmacyInventoryResponseDto } from './dto/pharmacyInventoryResponse.dto';
-import {
-  PriceQuantityFilterDto,
-  QuantityThresholdType,
-} from './dto/priceQuantityFilter.dto';
-import { PriceQuantityFilterResponseDto } from './dto/priceQuantityFilterResponse.dto';
+import { SortBy, SortOrder } from './dto/req/inventoryFilter.dto';
+import { QuantityThresholdType } from './dto/req/priceQuantityFilter.dto';
+import { SearchType } from './dto/req/searchRequest.dto';
 
 @Injectable()
 export class StoreService {

@@ -1,6 +1,5 @@
-# Docker Compose - 整合配置（傳統模式）
+# Docker Compose - 整合配置
 # 同時管理資料庫和後端服務
-# 注意: 推薦使用分離式配置 (docker-compose.db.yml + docker-compose.backend.yml)
 
 services:
   db:
@@ -20,7 +19,7 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - db_data_integrated:/var/lib/postgresql/data
-      - ./script/init-db.sh:/docker-entrypoint-initdb.d/01-init-db.sh:ro
+      - ./script/auto/init-db.sh:/docker-entrypoint-initdb.d/01-init-db.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
       interval: 30s
@@ -56,13 +55,18 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      # 使用者認證相關環境變數
+      NORMAL_USER_USERNAME: ${NORMAL_USER_USERNAME}
+      NORMAL_USER_PASSWORD: ${NORMAL_USER_PASSWORD}
+      ADMIN_USER_USERNAME: ${ADMIN_USER_USERNAME}
+      ADMIN_USER_PASSWORD: ${ADMIN_USER_PASSWORD}
     ports:
       - "${PORT}:3000"
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/", "||", "exit", "1"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/docs"]
       interval: 30s
       timeout: 10s
       retries: 5
