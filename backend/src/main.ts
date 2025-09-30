@@ -39,8 +39,26 @@ async function bootstrap() {
   // CORS 配置
   const corsOptions = {
     origin: (origin, callback) => {
+      console.log(`CORS: Checking origin: ${origin}, NODE_ENV: ${process.env.NODE_ENV}`);
+      
       // 開發環境：允許所有來源
       if (process.env.NODE_ENV === 'development') {
+        console.log(`CORS: Allowing origin in development: ${origin}`);
+        return callback(null, true);
+      }
+
+      // 本地開發環境的常見來源（即使 NODE_ENV 不是 development）
+      const localOrigins = [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:3001',
+        'http://0.0.0.0:3000',
+        'http://0.0.0.0:3001'
+      ];
+
+      if (origin && localOrigins.includes(origin)) {
+        console.log(`CORS: Allowing local development origin: ${origin}`);
         return callback(null, true);
       }
 
@@ -50,6 +68,7 @@ async function bootstrap() {
 
       // 允許沒有 origin 的請求（API 工具、移動應用等）
       if (!origin) {
+        console.log('CORS: Allowing request with no origin');
         return callback(null, true);
       }
 
@@ -69,6 +88,7 @@ async function bootstrap() {
 
       // 檢查來源是否在明確允許的列表中
       if (allowedOrigins.includes(origin)) {
+        console.log(`CORS: Allowing explicitly configured origin: ${origin}`);
         return callback(null, true);
       }
 
