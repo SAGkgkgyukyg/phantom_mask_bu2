@@ -46,19 +46,7 @@ $ npm run migration:run
 - 匯入使用者資料 (`users.json`)
 
 ## Test Coverage Report
-我撰寫了 **49 個單元測試** 來覆蓋核心 API 功能。測試覆蓋率報告如下：
 
-```bash
-File Coverage Summary:
-- Statements: 88.75%
-- Branches: 75.26%
-- Functions: 74.46%
-- Lines: 88.5%
-
-Test Suites: 1 passed
-Tests: 49 passed
-Time: 1.102s
-```
 您可以使用以下指令執行測試腳本：
 
 ```bash
