@@ -65,15 +65,41 @@ docker compose exec db psql -U ${DB_USERNAME} -d ${DB_NAME}
 
 ## ⚙️ 環境變數設定
 
-| 變數 | 說明 | 預設值 |
-|------|------|--------|
-| `DB_HOST` | 資料庫主機 | `db` |
-| `DB_PORT` | 資料庫埠號 | `5432` |
-| `DB_USERNAME` | 資料庫使用者 | `phantom_user` |
-| `DB_PASSWORD` | 資料庫密碼 | - |
-| `DB_NAME` | 資料庫名稱 | `phantom_mask_db` |
-| `PORT` | API 服務埠號 | `3000` |
-| `NODE_ENV` | 執行環境 | `development` |
+### 資料庫設定
+| 變數 | 說明 | 預設值 | 備註 |
+|------|------|--------|------|
+| `DB_HOST` | PostgreSQL 資料庫主機位址 | `localhost` | Docker 環境請設為 `db` |
+| `DB_PORT` | PostgreSQL 連接埠號 | `5432` | 標準 PostgreSQL 埠號 |
+| `DB_USERNAME` | 資料庫使用者名稱 | - | **必須設定** |
+| `DB_PASSWORD` | 資料庫使用者密碼 | - | **必須設定**，生產環境請使用強密碼 |
+| `DB_NAME` | 資料庫名稱 | - | **必須設定** |
+
+### 應用程式設定
+| 變數 | 說明 | 預設值 | 備註 |
+|------|------|--------|------|
+| `NODE_ENV` | 應用程式執行環境 | `development` | `development` \| `production` \| `test` |
+| `PORT` | API 服務監聽埠號 | `3000` | 可自訂，避免埠號衝突 |
+| `LOG_LEVEL` | 日誌記錄等級 | `debug` | `error` \| `warn` \| `info` \| `debug` \| `verbose` |
+
+### 安全性設定
+| 變數 | 說明 | 預設值 | 備註 |
+|------|------|--------|------|
+| `JWT_SECRET` | JWT 簽名密鑰 | `test` | **生產環境必須更改**，建議 32+ 字元 |
+| `JWT_EXPIRES_IN` | JWT Token 有效期限 | `24h` | 格式：數字+單位 (h/d/m) |
+| `ALLOWED_ORIGINS` | CORS 允許的前端來源 | - | 多個網址用逗號分隔，生產環境必須設定 |
+
+### 預設使用者帳號
+| 變數 | 說明 | 預設值 | 備註 |
+|------|------|--------|------|
+| `NORMAL_USER_USERNAME` | 普通使用者帳號 | `user` | 系統初始化時建立 |
+| `NORMAL_USER_PASSWORD` | 普通使用者密碼 | - | **必須設定** bcrypt 雜湊值 |
+| `ADMIN_USER_USERNAME` | 管理者帳號 | `admin` | 系統初始化時建立 |
+| `ADMIN_USER_PASSWORD` | 管理者密碼 | - | **必須設定** bcrypt 雜湊值 |
+
+> ⚠️ **重要提醒**: 
+> - 標記為 **必須設定** 的變數在啟動前必須配置
+> - 生產環境部署前，請務必更改所有預設密碼和密鑰
+> - 密碼需使用 bcrypt 加密，可使用線上工具或程式碼生成
 
 ## 服務存取
 
